@@ -11,7 +11,7 @@ allprojects {
 
 plugins {
 	id("kotlin2js") version "1.2.31"
-	id("ru.capjack.degos-publish") version "1.4.0"
+	id("ru.capjack.degos-publish") version "1.4.1-dev.1.uncommitted+5b76ff7"
 	id("nebula.release") version "6.0.0"
 }
 
