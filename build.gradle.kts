@@ -11,6 +11,7 @@ allprojects {
 
 plugins {
 	id("kotlin") version "1.2.31"
+	
 	`kotlin-dsl`
 	`java-gradle-plugin`
 	`maven-publish`
