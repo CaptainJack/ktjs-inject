@@ -11,7 +11,6 @@ allprojects {
 
 plugins {
 	id("kotlin") version "1.2.31"
-	
 	`kotlin-dsl`
 	`java-gradle-plugin`
 	`maven-publish`
@@ -20,8 +19,7 @@ plugins {
 }
 
 dependencies {
-	implementation(kotlin("stdlib-jdk8"))
-	compileClasspath(kotlin("gradle-plugin"))
+	compileOnly(kotlin("gradle-plugin"))
 }
 
 gradlePlugin {
@@ -29,11 +27,8 @@ gradlePlugin {
 		"KtjsInject" {
 			id = "ru.capjack.ktjs-inject"
 			implementationClass = "ru.capjack.ktjs.inject.KtjsInjectPlugin"
-		}	}
-}
-
-tasks.withType<KotlinCompile> {
-	kotlinOptions.jvmTarget = "1.8"
+		}
+	}
 }
 
 val projectCompiler = project(":compiler")
