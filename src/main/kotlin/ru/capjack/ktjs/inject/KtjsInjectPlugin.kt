@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 open class KtjsInjectPlugin : Plugin<Project> {
 	override fun apply(project: Project) {
-		val compiler = javaClass.classLoader.getResource(":compiler.jar").path
+		val compiler = javaClass.classLoader.getResource("compiler.jar").path
 		val runtime = javaClass.classLoader.getResource("runtime.jar").path
 		
 		project.dependencies.add("implementation", project.files(runtime))

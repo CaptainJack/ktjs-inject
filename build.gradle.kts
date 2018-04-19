@@ -36,7 +36,7 @@ tasks.withType<KotlinCompile> {
 	kotlinOptions.jvmTarget = "1.8"
 }
 
-val projectCompiler = project("::compiler")
+val projectCompiler = project(":compiler")
 val projectRuntime = project(":runtime")
 
 evaluationDependsOn(":${projectCompiler.name}")
