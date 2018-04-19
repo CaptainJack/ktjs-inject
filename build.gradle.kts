@@ -1,5 +1,5 @@
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 allprojects {
 	group = "ru.capjack.ktjs"
@@ -10,36 +10,18 @@ allprojects {
 }
 
 plugins {
-	id("kotlin") version "1.2.31"
-	`kotlin-dsl`
-	`java-gradle-plugin`
-	`maven-publish`
+	id("kotlin2js") version "1.2.31"
 	id("ru.capjack.degos-publish") version "1.4.0"
 	id("nebula.release") version "6.0.0"
 }
 
 dependencies {
-	compileOnly(kotlin("gradle-plugin"))
+	implementation(kotlin("stdlib-js"))
+	implementation("ru.capjack.ktjs:ktjs-common:0.1.0-SNAPSHOT")
 }
 
-gradlePlugin {
-	(plugins) {
-		"KtjsInject" {
-			id = "ru.capjack.ktjs-inject"
-			implementationClass = "ru.capjack.ktjs.inject.KtjsInjectPlugin"
-		}
-	}
-}
-
-val projectCompiler = project(":compiler")
-val projectRuntime = project(":runtime")
-
-evaluationDependsOn(":${projectCompiler.name}")
-evaluationDependsOn(":${projectRuntime.name}")
-afterEvaluate {
-	tasks["processResources"].dependsOn(projectCompiler.tasks["jar"], projectRuntime.tasks["jar"])
-	java.sourceSets["main"].resources.apply {
-		srcDir((projectCompiler.tasks["jar"] as Jar).archivePath.parent)
-		srcDir((projectRuntime.tasks["jar"] as Jar).archivePath.parent)
+tasks.withType<Kotlin2JsCompile> {
+	kotlinOptions {
+		moduleKind = "amd"
 	}
 }

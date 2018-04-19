@@ -5,3 +5,5 @@ plugins {
 dependencies {
 	implementation(kotlin("compiler-embeddable"))
 }
+
+version = ""

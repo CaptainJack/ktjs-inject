@@ -1,8 +1,8 @@
 rootProject.name = "ktjs-inject"
 
 include(
-	"compiler",
-	"runtime"
+	"ktjs-inject-plugin",
+	"ktjs-inject-plugin:compiler"
 )
 
 pluginManagement {
