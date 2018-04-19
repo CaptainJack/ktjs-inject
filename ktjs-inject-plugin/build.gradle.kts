@@ -4,7 +4,6 @@ plugins {
 	`java-gradle-plugin`
 	`maven-publish`
 	id("ru.capjack.degos-publish")
-	id("nebula.release")
 }
 
 dependencies {
