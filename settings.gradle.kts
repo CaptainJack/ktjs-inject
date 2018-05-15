@@ -1,8 +1,9 @@
 rootProject.name = "ktjs-inject"
 
 include(
-	"ktjs-inject-plugin",
-	"ktjs-inject-plugin:compiler"
+	"ktjs-inject",
+	"ktjs-inject-gradle",
+	"ktjs-inject-compiler"
 )
 
 pluginManagement {
@@ -12,8 +13,8 @@ pluginManagement {
 		when {
 			id.startsWith("kotlin")     ->
 				useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
-			id.startsWith("ru.capjack") ->
-				useModule("ru.capjack.${id.substringAfterLast('.').substringBefore('-')}:${id.substringAfterLast('.')}:${requested.version}")
+			id.startsWith("ru.capjack.degos") ->
+				useModule("ru.capjack.degos:degos-${id.substringAfterLast('.')}:${requested.version}")
 		}
 	}
 }
