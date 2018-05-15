@@ -18,12 +18,6 @@ gradlePlugin {
 	}
 }
 
-
 tasks.withType<ProcessResources> {
 	expand(project.properties)
 }
-
-
-//processResources {
-//	expand(project.properties)
-//}
