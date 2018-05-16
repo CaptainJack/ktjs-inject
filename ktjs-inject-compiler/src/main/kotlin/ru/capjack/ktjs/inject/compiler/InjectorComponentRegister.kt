@@ -9,7 +9,8 @@ import org.jetbrains.kotlin.js.translate.extensions.JsSyntheticTranslateExtensio
 
 class InjectorComponentRegister : ComponentRegistrar {
 	override fun registerProjectComponents(project: MockProject, configuration: CompilerConfiguration) {
-		JsSyntheticTranslateExtension.registerExtension(project,
+		JsSyntheticTranslateExtension.registerExtension(
+			project,
 			InjectorExtension(configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE))
 		)
 	}

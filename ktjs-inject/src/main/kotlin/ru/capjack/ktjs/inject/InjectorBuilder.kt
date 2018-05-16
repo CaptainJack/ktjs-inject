@@ -1,5 +1,7 @@
 package ru.capjack.ktjs.inject
 
+import ru.capjack.ktjs.inject.bindings.BinderImpl
+
 class InjectorBuilder {
 	private val configurations: MutableList<InjectConfiguration> = mutableListOf()
 	
@@ -10,19 +12,14 @@ class InjectorBuilder {
 	
 	fun configure(configuration: Binder.() -> Unit): InjectorBuilder {
 		return configure(object : InjectConfiguration {
-			override fun configure(binder: Binder) {
-				binder.configuration()
-			}
+			override fun configure(binder: Binder) = configuration.invoke(binder)
 		})
 	}
 	
-	fun build(strongBinding: Boolean = true): Injector {
+	fun build(strong: Boolean = true): Injector {
 		val injector = InjectorImpl()
-		val binder = BinderImpl(injector, strongBinding)
-		
-		for (configuration in configurations) {
-			configuration.configure(binder)
-		}
+		val binder = BinderImpl(injector, strong)
+		configurations.forEach { it.configure(binder) }
 		return injector
 	}
 }

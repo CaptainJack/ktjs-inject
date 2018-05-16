@@ -4,7 +4,7 @@ package ru.capjack.ktjs.inject
 annotation class Inject
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class InjectName(val name: String = "")
+annotation class InjectName(val name: String)
 
 @Target(AnnotationTarget.CLASS)
 annotation class InjectProxy

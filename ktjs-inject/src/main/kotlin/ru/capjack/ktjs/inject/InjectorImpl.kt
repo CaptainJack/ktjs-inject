@@ -1,25 +1,21 @@
 package ru.capjack.ktjs.inject
 
 import ru.capjack.ktjs.common.TypedName
+import ru.capjack.ktjs.common.cutLast
 import ru.capjack.ktjs.inject.bindings.Binding
 import kotlin.reflect.KClass
 
 internal class InjectorImpl() : Injector {
 	
-	private val bindings: MutableMap<KClass<*>, Binding<*>> = mutableMapOf()
-	private val namedBindings: MutableMap<TypedName<*>, Binding<*>> = mutableMapOf()
+	private val typeBindings: MutableMap<KClass<out Any>, Binding<Any>> = mutableMapOf()
+	private val namedBindings: MutableMap<TypedName<out Any>, Binding<Any>> = mutableMapOf()
 	
 	@Suppress("UNCHECKED_CAST")
 	override fun <T : Any> get(type: KClass<T>): T {
-		if (type == Injector::class) {
-			return this as T
+		return typeBindings[type].let {
+			if (it == null) create(type)
+			else it.get() as T
 		}
-		val binding = bindings[type] ?: throw NoSuchElementException("Binding for class \"${type.simpleName}\" is not defined")
-		return binding.get() as T
-	}
-	
-	override fun <T : Any> KClass<T>.unaryPlus(): T {
-		return get(this)
 	}
 	
 	@Suppress("UNCHECKED_CAST")
@@ -28,23 +24,34 @@ internal class InjectorImpl() : Injector {
 		return binding.get() as T
 	}
 	
-	override fun <T : Any> TypedName<T>.unaryPlus(): T {
-		return get(this)
+	internal fun <T : Any> contains(type: KClass<T>): Boolean {
+		return typeBindings.containsKey(type)
 	}
 	
-	internal fun <T : Any> containsBinding(type: KClass<T>): Boolean {
-		return bindings.containsKey(type)
-	}
-	
-	internal fun <T : Any> containsBinding(name: TypedName<T>): Boolean {
+	internal fun <T : Any> contains(name: TypedName<T>): Boolean {
 		return namedBindings.containsKey(name)
 	}
 	
-	internal fun <T : Any> setBinding(type: KClass<T>, binding: Binding<T>) {
-		bindings[type] = binding
+	internal fun <T : Any> set(type: KClass<T>, binding: Binding<T>) {
+		typeBindings[type] = binding
 	}
 	
-	internal fun <T : Any> setBinding(name: TypedName<T>, binding: Binding<T>) {
+	internal fun <T : Any> set(name: TypedName<T>, binding: Binding<T>) {
 		namedBindings[name] = binding
+	}
+	
+	internal fun <T : Any> create(type: KClass<T>): T {
+		return create(type, emptyArray())
+	}
+	
+	internal fun <T : Any> create(type: KClass<T>, additionalArgs: Array<Any>): T {
+		val metadata = Metadata.getInject(type)
+		val args = metadata.args.cutLast(additionalArgs.size).map {
+			if (it is Array<*>)
+				get(TypedName(it[0].unsafeCast<KClass<*>>(), it[1].unsafeCast<String>()))
+			else
+				get(it.unsafeCast<KClass<*>>())
+		}
+		return metadata.create(args.toTypedArray() + additionalArgs)
 	}
 }

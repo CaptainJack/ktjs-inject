@@ -1,10 +1,10 @@
 package ru.capjack.ktjs.inject.bindings
 
-import ru.capjack.ktjs.inject.Injector
+import ru.capjack.ktjs.inject.InjectorImpl
 
-internal open class ProviderBinding<out T : Any>(
-	private val injector: Injector,
-	private val provider: Injector.() -> T
-) : Binding<T> {
-	override fun get(): T = injector.provider()
+internal open class ProviderBinding<T : Any>(
+	injector: InjectorImpl,
+	private val provider: InjectorImpl.() -> T
+) : InstanceDependentBinding<T>(injector) {
+	override fun get(): T = provider.invoke(injector)
 }

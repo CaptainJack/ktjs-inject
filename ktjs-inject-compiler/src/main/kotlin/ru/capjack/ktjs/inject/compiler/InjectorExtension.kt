@@ -46,98 +46,103 @@ class InjectorExtension(
 	}
 	
 	override fun generateClassSyntheticParts(declaration: KtPureClassOrObject, descriptor: ClassDescriptor, translator: DeclarationBodyVisitor, context: TranslationContext) {
-		
 		if (descriptor.annotations.hasAnnotation(annotationInjectProxy)) {
-			if (descriptor.kind != ClassKind.INTERFACE) {
-				error(declaration, "InjectProxy can only be an interface")
-			}
-			else {
-				
-				val methods = JsArrayLiteral(
-					descriptor.unsubstitutedMemberScope.getContributedDescriptors(
-						DescriptorKindFilter.FUNCTIONS,
-						alwaysTrue()
-					)
-						.filterIsInstance<SimpleFunctionDescriptor>()
-						.filter { it.modality == Modality.ABSTRACT && it.returnType != null }
-						.map {
-							JsArrayLiteral(
-								listOf(
-									JsStringLiteral(context.getNameForDescriptor(it).ident),
-									defineTypeReference(context, it.returnType!!),
-									JsIntLiteral(it.valueParameters.size)
-								)
-							)
-						}
-				)
-				
-				context.addTopLevelStatement(
-					JsAstUtils.assignment(
-						JsNameRef(
-							"injectProxy",
-							JsNameRef(Namer.METADATA, context.getInnerReference(descriptor))
-						),
-						methods
-					).makeStmt()
-				)
-			}
+			processInjectProxy(declaration, descriptor, context)
 		}
 		else if (descriptor.annotations.hasAnnotation(annotationInject)) {
-			if (descriptor.kind != ClassKind.CLASS) {
-				error(declaration, "Inject can only be an class")
-			}
-			else if (descriptor.modality == Modality.ABSTRACT) {
-				error(declaration, "Inject can only be an non abstract class")
-			}
-			else {
-				val types = JsArrayLiteral(
-					descriptor.constructors.first { it.isPrimary }.valueParameters.map {
-						val annotation = it.annotations.findAnnotation(annotationInjectName)
-						val type = defineTypeReference(context, it.type)
-						if (annotation == null) {
-							type
-						}
-						else {
-							JsArrayLiteral(
-								listOf(
-									type,
-									JsStringLiteral(annotation.firstArgument()?.value?.toString() ?: it.name.identifier)
-								)
-							)
-						}
-					}
-				)
-				val create = context.createRootScopedFunction("create")
-				val args = create.addParameter("a")
-				create.addStatement(
-					JsReturn(
-						JsNew(
-							context.getInnerReference(descriptor),
-							0.until(types.expressions.size).map {
-								JsArrayAccess(
-									JsNameRef(args.name),
-									JsNameRef(it.toString())
-								)
-							})
-					)
-				)
-				
-				context.addTopLevelStatement(
-					JsAstUtils.assignment(
-						JsNameRef(
-							"inject",
-							JsNameRef(Namer.METADATA, context.getInnerReference(descriptor))
-						), JsObjectLiteral(
-							listOf(
-								JsPropertyInitializer(JsNameRef("types"), types),
-								JsPropertyInitializer(JsNameRef("create"), create)
-							),
-							true
-						)
-					).makeStmt()
-				)
-			}
+			processInject(declaration, descriptor, context)
 		}
+	}
+	
+	private fun processInject(declaration: KtPureClassOrObject, descriptor: ClassDescriptor, context: TranslationContext) {
+		if (descriptor.kind != ClassKind.CLASS) {
+			error(declaration, "Inject can only be an class")
+			return
+		}
+		
+		if (descriptor.modality == Modality.ABSTRACT) {
+			error(declaration, "Inject can only be an non abstract class")
+			return
+		}
+		
+		val args = JsArrayLiteral(
+			descriptor.constructors.first { it.isPrimary }.valueParameters.map {
+				val annotation = it.annotations.findAnnotation(annotationInjectName)
+				val type = defineTypeReference(context, it.type)
+				if (annotation == null) {
+					type
+				}
+				else {
+					JsArrayLiteral(
+						listOf(
+							type,
+							JsStringLiteral(annotation.firstArgument()?.value?.toString() ?: it.name.identifier)
+						)
+					)
+				}
+			}
+		)
+		val create = context.createRootScopedFunction("create").apply {
+			val pArgs = addParameter("a")
+			addStatement(
+				JsReturn(
+					JsNew(
+						context.getInnerReference(descriptor),
+						0.until(args.expressions.size).map {
+							JsArrayAccess(JsNameRef(pArgs.name), JsIntLiteral(it))
+						})
+				)
+			)
+		}
+		
+		context.addTopLevelStatement(
+			JsAstUtils.assignment(
+				JsNameRef(
+					"inject",
+					JsNameRef(Namer.METADATA, context.getInnerReference(descriptor))
+				), JsObjectLiteral(
+					listOf(
+						JsPropertyInitializer(JsNameRef("args"), args),
+						JsPropertyInitializer(JsNameRef("create"), create)
+					),
+					true
+				)
+			).makeStmt()
+		)
+		
+	}
+	
+	private fun processInjectProxy(declaration: KtPureClassOrObject, descriptor: ClassDescriptor, context: TranslationContext) {
+		if (descriptor.kind != ClassKind.INTERFACE) {
+			error(declaration, "InjectProxy can only be an interface")
+			return
+		}
+		
+		val methods = JsArrayLiteral(
+			descriptor.unsubstitutedMemberScope.getContributedDescriptors(DescriptorKindFilter.FUNCTIONS, alwaysTrue())
+				.filterIsInstance<SimpleFunctionDescriptor>()
+				.filter { it.modality == Modality.ABSTRACT && it.returnType != null }
+				.map {
+					JsArrayLiteral(
+						listOf(
+							JsStringLiteral(it.name.identifier),
+							JsStringLiteral(context.getNameForDescriptor(it).ident),
+							defineTypeReference(context, it.returnType!!),
+							JsIntLiteral(it.valueParameters.size)
+						)
+					)
+				}
+		)
+		
+		context.addTopLevelStatement(
+			JsAstUtils.assignment(
+				JsNameRef(
+					"injectProxy",
+					JsNameRef(Namer.METADATA, context.getInnerReference(descriptor))
+				),
+				methods
+			).makeStmt()
+		)
 	}
 	
 	private fun defineTypeReference(context: TranslationContext, type: KotlinType): JsExpression {
