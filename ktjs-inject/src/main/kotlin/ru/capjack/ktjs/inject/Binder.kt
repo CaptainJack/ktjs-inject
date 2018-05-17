@@ -31,7 +31,7 @@ interface ImplementationBinder {
 	fun <T : Any, I : T> bind(type: KClass<T>, implementation: KClass<I>)
 }
 
-inline fun <reified T : Any> Binder.bind(instance: T) {
+inline fun <reified T : Any> Binder.bindInstance(instance: T) {
 	bindInstance(T::class, instance)
 }
 
@@ -45,6 +45,14 @@ inline fun <reified T : Any> Binder.bindProvider(noinline provider: Injector.() 
 
 inline fun <reified T : Any> Binder.bindProxy(): ProxyBinder {
 	return bindProxy(T::class)
+}
+
+inline fun <reified T : Any, reified I : T> Binder.bindReference() {
+	bindFactory(T::class) { get(I::class) }
+}
+
+inline fun <reified T : Any> ImplementationBinder.bindSelf() {
+	bind(T::class, T::class)
 }
 
 inline fun <reified T : Any, reified I : T> ImplementationBinder.bind() {
