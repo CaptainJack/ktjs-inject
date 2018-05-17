@@ -19,5 +19,6 @@ gradlePlugin {
 }
 
 tasks.withType<ProcessResources> {
+	inputs.property("version", version.toString())
 	expand(project.properties)
 }
