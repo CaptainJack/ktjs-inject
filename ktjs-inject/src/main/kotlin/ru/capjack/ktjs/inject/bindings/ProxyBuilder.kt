@@ -37,13 +37,13 @@ internal class ProxyBuilder<T : Any>(
 		val o: dynamic = jso()
 		
 		methods.forEach {
-			o[it.kotlinName] =
-				if (it.argAmount == 0) {
-					injector.create(it.implementation)
-				}
-				else {
-					injector.create(it.implementation, js("Array.prototype.slice.call(arguments)").unsafeCast<Array<Any>>())
-				}
+			val t = it.implementation
+			o[it.kotlinName] = if (it.argAmount == 0) {
+				{ injector.create(t) }
+			}
+			else {
+				{ injector.create(t, js("Array.prototype.slice.call(arguments)").unsafeCast<Array<Any>>()) }
+			}
 		}
 		
 		return o.unsafeCast<T>()
