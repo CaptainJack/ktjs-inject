@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
 	implementation(kotlin("stdlib-js"))
-	implementation("ru.capjack.ktjs:ktjs-common:0.2.+")
+	implementation("ru.capjack.ktjs:ktjs-common:0.2.0-SNAPSHOT")
 }
 
 tasks.withType<Kotlin2JsCompile> {
