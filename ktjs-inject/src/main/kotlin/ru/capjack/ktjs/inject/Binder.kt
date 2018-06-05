@@ -10,7 +10,7 @@ interface Binder : ImplementationBinder {
 	
 	fun <T : Any> bindProvider(type: KClass<T>, provider: Injector.() -> T)
 	
-	fun <T : Any> bind(name: TypedName<T>, implementation: KClass<T>)
+	fun <T : Any> bind(name: TypedName<T>, implementation: KClass<out T>)
 	
 	fun <T : Any> bindInstance(name: TypedName<T>, instance: T)
 	
@@ -61,8 +61,4 @@ inline fun <reified T : Any, reified I : T> ImplementationBinder.bind() {
 
 inline fun <reified T : Any> ProxyBinder.bind(method: String) {
 	bind(method, T::class)
-}
-
-inline fun <reified T : Any> Binder.bind(name: TypedName<T>) {
-	bind(name, T::class)
 }

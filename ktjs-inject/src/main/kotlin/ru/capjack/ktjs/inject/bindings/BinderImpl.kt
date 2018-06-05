@@ -27,7 +27,7 @@ internal class BinderImpl(
 		injector.set(type, ProviderBinding(injector, provider))
 	}
 	
-	override fun <T : Any> bind(name: TypedName<T>, implementation: KClass<T>) {
+	override fun <T : Any> bind(name: TypedName<T>, implementation: KClass<out T>) {
 		injector.set(name, NameReplaceBinding(name, injector, { create(implementation) }))
 	}
 	
