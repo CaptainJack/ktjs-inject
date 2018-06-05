@@ -62,3 +62,7 @@ inline fun <reified T : Any, reified I : T> ImplementationBinder.bind() {
 inline fun <reified T : Any> ProxyBinder.bind(method: String) {
 	bind(method, T::class)
 }
+
+inline fun <reified T : Any> Binder.bind(name: TypedName<T>) {
+	bind(name, T::class)
+}
