@@ -3,6 +3,9 @@ package ru.capjack.ktjs.inject
 import ru.capjack.ktjs.common.TypedName
 import ru.capjack.ktjs.common.cutLast
 import ru.capjack.ktjs.inject.bindings.Binding
+import ru.capjack.ktjs.inject.bindings.InstanceBinding
+import ru.capjack.ktjs.inject.bindings.ProviderBinding
+import ru.capjack.ktjs.inject.bindings.ProxyBuilder
 import kotlin.reflect.KClass
 
 internal class InjectorImpl() : Injector {
@@ -13,7 +16,7 @@ internal class InjectorImpl() : Injector {
 	@Suppress("UNCHECKED_CAST")
 	override fun <T : Any> get(type: KClass<T>): T {
 		return typeBindings[type].let {
-			if (it == null) create(type)
+			if (it == null) supply(type)
 			else it.get() as T
 		}
 	}
@@ -38,6 +41,37 @@ internal class InjectorImpl() : Injector {
 	
 	internal fun <T : Any> set(name: TypedName<T>, binding: Binding<T>) {
 		namedBindings[name] = binding
+	}
+	
+	internal fun <T : Any> supply(type: KClass<T>): T {
+		return supply(type, emptyArray())
+	}
+	
+	internal fun <T : Any> supply(type: KClass<T>, additionalArgs: Array<Any>): T {
+		val metadata = Metadata.getBind(type)
+		if (metadata != null) {
+			val implementation = metadata.implementation
+			if (metadata.multiple) {
+				when (implementation) {
+					"self" -> set(type, ProviderBinding(this) { create(type) })
+					else   -> {
+						val impl = implementation.unsafeCast<KClass<T>>()
+						set(type, ProviderBinding(this) { create(impl) })
+					}
+				}
+			} else {
+				when (implementation) {
+					"self"  -> set(type, InstanceBinding(create(type)))
+					"proxy" -> set(type, InstanceBinding(ProxyBuilder(type).build(this)))
+					else    -> {
+						set(type, InstanceBinding(get(implementation.unsafeCast<KClass<T>>())))
+					}
+				}
+			}
+			return get(type)
+		}
+		
+		return create(type, additionalArgs)
 	}
 	
 	internal fun <T : Any> create(type: KClass<T>): T {

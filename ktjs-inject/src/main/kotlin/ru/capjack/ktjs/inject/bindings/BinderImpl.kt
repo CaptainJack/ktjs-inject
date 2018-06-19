@@ -11,47 +11,58 @@ internal class BinderImpl(
 	private val injector: InjectorImpl,
 	private val strong: Boolean
 ) : Binder {
+	
 	override fun <T : Any, I : T> bind(type: KClass<T>, implementation: KClass<I>) {
-		injector.set(type, TypeReplaceBinding(type, injector, { create(implementation) }))
+		injector.set(type, TypeReplaceBinding(type, injector) { create(implementation) })
 	}
 	
-	override fun <T : Any> bindInstance(type: KClass<T>, instance: T) {
+	override fun <T : Any, I : T> bindMultiple(type: KClass<T>, implementation: KClass<I>) {
+		injector.set(type, ProviderBinding(injector) { create(implementation) })
+	}
+	
+	override fun <T : Any, I : T> bindInstance(type: KClass<T>, instance: I) {
 		injector.set(type, InstanceBinding(instance))
 	}
 	
-	override fun <T : Any> bindFactory(type: KClass<T>, factory: Injector.() -> T) {
+	override fun <T : Any, I : T> bindFactory(type: KClass<T>, factory: Injector.() -> I) {
 		injector.set(type, TypeReplaceBinding(type, injector, factory))
 	}
 	
-	override fun <T : Any> bindProvider(type: KClass<T>, provider: Injector.() -> T) {
-		injector.set(type, ProviderBinding(injector, provider))
+	override fun <T : Any, I : T> bindProvider(type: KClass<T>, factory: Injector.() -> I) {
+		injector.set(type, ProviderBinding(injector, factory))
 	}
 	
-	override fun <T : Any> bind(name: TypedName<T>, implementation: KClass<out T>) {
-		injector.set(name, NameReplaceBinding(name, injector, { create(implementation) }))
+	
+	override fun <T : Any, I : T> bind(name: TypedName<T>, implementation: KClass<I>) {
+		injector.set(name, NameReplaceBinding(name, injector) { create(implementation) })
 	}
 	
-	override fun <T : Any> bindInstance(name: TypedName<T>, instance: T) {
+	override fun <T : Any, I : T> bindInstance(name: TypedName<T>, instance: I) {
 		injector.set(name, InstanceBinding(instance))
 	}
 	
-	override fun <T : Any> bindFactory(name: TypedName<T>, factory: Injector.() -> T) {
+	override fun <T : Any, I : T> bindFactory(name: TypedName<T>, factory: Injector.() -> I) {
 		injector.set(name, NameReplaceBinding(name, injector, factory))
 	}
 	
-	override fun <T : Any> bindProvider(name: TypedName<T>, provider: Injector.() -> T) {
-		injector.set(name, ProviderBinding(injector, provider))
+	override fun <T : Any, I : T> bindMultiple(name: TypedName<T>, implementation: KClass<I>) {
+		injector.set(name, ProviderBinding(injector) { create(implementation) })
 	}
 	
+	override fun <T : Any, I : T> bindProvider(name: TypedName<T>, factory: Injector.() -> I) {
+		injector.set(name, ProviderBinding(injector, factory))
+	}
+	
+	
 	override fun <T : Any> bindProxy(type: KClass<T>): ProxyBinder {
-		val builder = ProxyBuilder(type)
-		injector.set(type, TypeReplaceBinding(type, injector, builder::build))
-		return builder
+		return ProxyBuilder(type).apply {
+			injector.set(type, TypeReplaceBinding(type, injector, ::build))
+		}
 	}
 	
 	override fun <T : Any> bindProxy(name: TypedName<T>): ProxyBinder {
-		val builder = ProxyBuilder(name.type)
-		injector.set(name, NameReplaceBinding(name, injector, builder::build))
-		return builder
+		return ProxyBuilder(name.type).apply {
+			injector.set(name, NameReplaceBinding(name, injector, ::build))
+		}
 	}
 }

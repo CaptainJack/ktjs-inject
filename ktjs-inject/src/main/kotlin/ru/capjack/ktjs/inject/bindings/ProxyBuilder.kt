@@ -13,7 +13,8 @@ internal class ProxyBuilder<T : Any>(
 	private var methods: List<Method>
 	
 	init {
-		methods = Metadata.getInjectProxy(type).map {
+		val metadata = Metadata.getProxy(type)
+		methods = metadata.map {
 			Method(
 				it[0].unsafeCast<String>(),
 				it[1].unsafeCast<String>(),
@@ -23,14 +24,16 @@ internal class ProxyBuilder<T : Any>(
 		}
 	}
 	
-	override fun <T : Any> bind(method: String, implementation: KClass<T>) {
+	override fun <T : Any> provides(method: String, implementation: KClass<T>): ProxyBinder {
 		(methods.find { it.name == method } ?: throw IllegalArgumentException("Method $method not found in type ${type.simpleName}"))
 			.implementation = implementation
+		return this
 	}
 	
-	override fun <T : Any, I : T> bind(type: KClass<T>, implementation: KClass<I>) {
+	override fun <T : Any, I : T> provides(type: KClass<T>, implementation: KClass<I>): ProxyBinder {
 		(methods.find { it.returnType == type } ?: throw IllegalArgumentException("Method for return type ${type.simpleName} not found in type ${type.simpleName}"))
 			.implementation = implementation
+		return this
 	}
 	
 	fun build(injector: InjectorImpl): T {
@@ -40,8 +43,7 @@ internal class ProxyBuilder<T : Any>(
 			val t = it.implementation
 			o[it.kotlinName] = if (it.argAmount == 0) {
 				{ injector.create(t) }
-			}
-			else {
+			} else {
 				{ injector.create(t, js("Array.prototype.slice.call(arguments)").unsafeCast<Array<Any>>()) }
 			}
 		}
