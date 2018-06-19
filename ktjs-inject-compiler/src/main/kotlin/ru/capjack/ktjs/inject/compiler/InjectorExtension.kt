@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.psi.KtPureClassOrObject
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
 import org.jetbrains.kotlin.resolve.constants.BooleanValue
 import org.jetbrains.kotlin.resolve.constants.KClassValue
+import org.jetbrains.kotlin.resolve.descriptorUtil.firstArgument
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.utils.alwaysTrue
@@ -94,7 +95,7 @@ class InjectorExtension(
 					JsArrayLiteral(
 						listOf(
 							type,
-							JsStringLiteral(ann.argumentValue("name")?.toString() ?: it.name.identifier)
+							JsStringLiteral(ann.firstArgument()?.value?.toString() ?: it.name.identifier)
 						)
 					)
 				}
