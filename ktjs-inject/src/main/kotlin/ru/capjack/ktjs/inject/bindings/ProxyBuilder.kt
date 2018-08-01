@@ -31,7 +31,7 @@ internal class ProxyBuilder<T : Any>(
 	}
 	
 	override fun <T : Any, I : T> provides(type: KClass<T>, implementation: KClass<I>): ProxyBinder {
-		(methods.find { it.returnType == type } ?: throw IllegalArgumentException("Method for return type ${type.simpleName} not found in type ${type.simpleName}"))
+		(methods.find { it.returnType == type } ?: throw IllegalArgumentException("Method for return type ${type.simpleName} not found in type ${this.type.simpleName}"))
 			.implementation = implementation
 		return this
 	}

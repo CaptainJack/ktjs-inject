@@ -1,7 +1,5 @@
 package ru.capjack.ktjs.inject
 
-import ru.capjack.ktjs.common.TypedName
-import ru.capjack.ktjs.common.cutLast
 import ru.capjack.ktjs.inject.bindings.Binding
 import ru.capjack.ktjs.inject.bindings.InstanceBinding
 import ru.capjack.ktjs.inject.bindings.ProviderBinding
@@ -80,7 +78,7 @@ internal class InjectorImpl() : Injector {
 	
 	internal fun <T : Any> create(type: KClass<T>, additionalArgs: Array<Any>): T {
 		val metadata = Metadata.getInject(type)
-		val args = metadata.args.cutLast(additionalArgs.size).map {
+		val args = metadata.args.dropLast(additionalArgs.size).map {
 			if (it is Array<*>)
 				get(TypedName(it[0].unsafeCast<KClass<*>>(), it[1].unsafeCast<String>()))
 			else

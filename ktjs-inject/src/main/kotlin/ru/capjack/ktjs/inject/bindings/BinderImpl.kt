@@ -1,10 +1,10 @@
 package ru.capjack.ktjs.inject.bindings
 
-import ru.capjack.ktjs.common.TypedName
 import ru.capjack.ktjs.inject.Binder
 import ru.capjack.ktjs.inject.Injector
 import ru.capjack.ktjs.inject.InjectorImpl
 import ru.capjack.ktjs.inject.ProxyBinder
+import ru.capjack.ktjs.inject.TypedName
 import kotlin.reflect.KClass
 
 internal class BinderImpl(

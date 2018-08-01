@@ -1,6 +1,5 @@
 package ru.capjack.ktjs.inject
 
-import ru.capjack.ktjs.common.TypedName
 import kotlin.reflect.KClass
 
 interface Injector {

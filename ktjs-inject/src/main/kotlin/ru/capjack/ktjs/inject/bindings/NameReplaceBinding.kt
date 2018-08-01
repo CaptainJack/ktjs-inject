@@ -1,7 +1,7 @@
 package ru.capjack.ktjs.inject.bindings
 
-import ru.capjack.ktjs.common.TypedName
 import ru.capjack.ktjs.inject.InjectorImpl
+import ru.capjack.ktjs.inject.TypedName
 
 internal class NameReplaceBinding<T : Any>(
 	private val name: TypedName<T>,
